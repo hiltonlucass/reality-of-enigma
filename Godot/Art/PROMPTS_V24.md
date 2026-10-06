@@ -1,0 +1,11 @@
+# V24 — banner anime
+
+Modo: ferramenta image_gen integrada, sem CLI. Arquivo final: menu-anime-v24.png. Geração: exec-bfdac7e7-fd16-42dc-b996-e9082e73951d.png. Copiado integralmente para Art. Recortes de cada painel são feitos pelo jogo em tempo de execução; não houve edição raster por script.
+
+Referências de identidade: hero-banners-v23.png (cinco personagens originais) e raizen-frames-v11.png (Raizen). Ambas inspecionadas antes da geração.
+
+Prompt utilizado:
+
+Use case: stylized-concept. Create ORIGINAL anime RPG menu artwork atlas, exactly THREE columns by TWO rows of SIX equal PORTRAIT panels, aspect ratio of each panel 4:5, total image about 2400x2000 or highest practical resolution. Reference 1 provides original character identities only, Reference 2 Raizen identity only. Smooth clean anime cel shading, sharp ink linework, sophisticated dramatic color and detailed environment. NOT pixel art, NOT sprite sheet, NOT oil painting. Each panel is edge-to-edge filled scene with character framed from thighs up, HEAD COMPLETELY INSIDE with 12% top margin, character center, no text no borders no UI. Panel reading order: top left KAEL black bowl haircut teal scarf brown leather armor twin daggers, ancient moonlit forest; top middle SAVOR curly black hair short beard charcoal tailored suit ivory open collar shirt, warm campfire no pirate costume no pan; top right AELIA flowing copper hair ivory and plum healer tunic holding tiny green light in garden; bottom left BRAKK adult muscular human blue hair red open vest huge mechanical ochre steel arms in forge; bottom middle LYRA short indigo bob dark elegant combat robe ice sword in snowy forest; bottom right RAIZEN black tousled spiky hair gray high collar wrap tunic black trousers purple waist sash fingerless gloves, violet black flame around hand amid dark ruins. Keep original costume identities of reference, upgrade to contemporary polished 2D anime key visual. Exact regular 3x2 grid, equally sized panels.
+
+Os aros, molduras, cadeados, correntes e espadas da interface são elementos desenhados pelo próprio jogo. A fonte Cinzel e sua licença estão em Fonts. O som de impacto é síntese PCM original em Battlefield.Entrance.cs; não foi extraído de outra obra.

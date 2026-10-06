@@ -1,0 +1,21 @@
+# Artes V5
+
+Modo: ferramenta integrada image_gen. Arquivos finais copiados ao projeto. Conceitos originais existentes usados como referências; as versões anteriores foram preservadas.
+
+## arena-v5.png
+Create a production game background asset, landscape 1536x1024, original fantasy pixel art for Project Vaelorn. Empty turn-based RPG battlefield in ancient shattered stone sanctuary at blue hour. Beautiful high-end detailed pixel art, rich navy teal and muted gold palette, atmospheric distant mountains and floating fractured islands, ruined arches at left and right edges, glowing thin cyan world-rift high in the distant sky. Upper 35% sky and ruins, bottom 65% broad nearly flat stone terrace with subdued flagstones and a faint circular ancient rune in the center. Plenty of uncluttered readable ground for ten combatants, no large foreground objects obstructing units. Camera slightly elevated looking across battlefield, JRPG stage framing. Soft amber rim lighting from braziers at extreme edges, quiet mist. Absolutely NO characters, NO text, NO UI, NO logos. Crisp square pixel clusters, sophisticated authored environment, not smooth 3D render.
+
+## kael-poses-v5.png
+Referência: kael-base.png. Transparência habilitada.
+
+Create a game-ready four-pose sprite sheet of EXACTLY this original character Kael, maintaining black bowl haircut, teal scarf and cape, dark leather armor, brown belts and two short silver blades. Transparent background. Wide landscape sheet, EXACTLY 4 equal-width cells in a SINGLE HORIZONTAL ROW, no borders, no text. One complete character per cell, same scale and foot baseline, facing RIGHT three-quarter side view. All limbs and swords contained inside each respective quarter with transparent padding, no overlap. Cell 1: combat idle knees slightly bent blades ready. Cell 2: windup body leans back, right blade raised, cape trails. Cell 3: strong forward dual blade slash, arm extended to right, lowered stance, cape behind, NO large VFX obscuring figure. Cell 4: recovery after slash, blade across body, feet planted. Polished detailed pixel art suitable for rendering at 150px tall, clear silhouette, sharp clusters and hand-authored shading. Preserve recognizable approved design, full bodies head to boots.
+
+Nota de integração: atlas gerado não possui células perfeitamente uniformes; regiões individuais configuradas no renderizador.
+
+## combatants-v5.png
+Referência: Personagens/Elenco_V1.png. Transparência habilitada.
+
+Game sprite atlas based faithfully on the character concepts in the reference. Transparent background, landscape 1536x1024 with EXACT 3 columns by 2 rows of equal cells. Each isolated full body character sits centered inside their own cell with at least 40px clear transparent padding on every edge. No overlap across cells. No lettering, no frames, no ground. Detailed beautiful pixel art consistent with reference, recognizable clothing and faces, combat ready three-quarter view. Upper row LEFT Savor bearded dark-haired traveler chef in cream shirt rust apron olive trousers holding frying pan, CENTER Aelia brown hair bun cream purple gold healer robes casting subtle golden thread, RIGHT Lyra silver short hair dark navy fur-trimmed ice mage coat holding small icy shard. These three face RIGHT. Bottom LEFT Brakk bulky ochre battered mining robot with amber visor facing RIGHT. Bottom CENTER original Varkhan slate gray muscular humanoid sentinel in purple cloth and dark segmented armor, bald angular head, two fingers glowing purple pointing LEFT. Bottom RIGHT original hostile rift creature facing LEFT, crouched wolf-like shadow beast with dark violet crystalline plates and glowing orange eyes. All full body head to feet, individual silhouettes, centered smaller inside each equal grid cell so nothing reaches cell edges. Reference only for design not layout.
+
+Edição final:
+Remove ALL background from this sprite sheet, deliver actual transparent alpha PNG. Preserve all six full body figures, their exact positions and sizes. Every pixel between characters must be transparent, no gradient, no colored backdrop, no atmospheric haze, no shadow floor, no checkerboard painted in. Keep only the six character cutouts and tiny attached magical effects. Do not add text or change designs. Need clean isolated cutouts for game compositing.

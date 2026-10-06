@@ -1,0 +1,3 @@
+# Retrato de Varkas — ferramenta integrada
+
+Use case: identity-preserve. Premium high-resolution full-body character portrait of exactly Varkas the original werewolf in reference. Long charcoal wolf muzzle, pointed ears no horns, muscular fur-covered body, silver mane, worn bronze shoulder armor on one shoulder, navy waist panels, cyan broken-ring soul sigil. Face toward right in three-quarter view, powerful relaxed ready stance, entire feet tail ears inside frame with margins. Crisp polished anime RPG key art, carefully rendered fur and expressive eyes, readable silhouette, no text, no setting, actual transparent background. Single figure only. Match redesigned sprite identity precisely.
