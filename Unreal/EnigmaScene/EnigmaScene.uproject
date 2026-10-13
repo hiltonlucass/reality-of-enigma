@@ -1,0 +1,11 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "Reality Of Enigma",
+  "Description": "Cena experimental isolada. Nao substitui o jogo Godot.",
+  "Plugins": [
+    {"Name": "PythonScriptPlugin", "Enabled": true},
+    {"Name": "EditorScriptingUtilities", "Enabled": true},
+    {"Name": "Niagara", "Enabled": true}
+  ]
+}
