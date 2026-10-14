@@ -1,0 +1,7 @@
+**/Binaries/
+**/Intermediate/
+**/Saved/
+**/DerivedDataCache/
+# Recursos da Epic sao reconstruidos da instalacao local, nunca publicados aqui.
+EnigmaScene/Content/
+EnigmaScene/Config/DefaultInput.ini
