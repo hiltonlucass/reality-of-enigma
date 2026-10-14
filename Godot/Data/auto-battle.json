@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "balanced": {"target":"front","healBelow":0.75},
+    "aggressive": {"target":"weakest","healBelow":0.5},
+    "defensive": {"target":"front","healBelow":0.85},
+    "support": {"target":"front","healBelow":0.9},
+    "control": {"target":"front","healBelow":0.7}
+  },
+  "characters": {"aelia":"support","savor":"support","brakk":"defensive","lyra":"control","kael":"aggressive","raizen":"aggressive"}
+}

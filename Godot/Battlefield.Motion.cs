@@ -20,6 +20,7 @@ public partial class Battlefield
         if(EntranceActive)return EntrancePosition(friendly,unit.Column,unit.Layer,home);
         if(unit.Origin!=null)home+=new Vector2(friendly?-70:70,62);
         if(ExitActive&&friendly&&unit.Alive)return home+new Vector2(Size.X*ExitProgress,0);
+        if(Returning(unit)&&unit!=actor){var ret=returns[unit];return ret.From.Lerp(home,Mathf.SmoothStep(0,1,(float)(clock-ret.At)/.52f));}
         float age=(float)(clock-actionAt);
         if(IsSpiral(unit))return SpiralPosition(unit,home,age);
         if(ShownFreeze(unit)>0||ShownStun(unit)>0||!IsMelee(unit)||age<0||age>=EffectDuration||Battle.LastTarget is not Unit target)return home;

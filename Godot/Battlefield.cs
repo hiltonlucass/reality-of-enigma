@@ -30,12 +30,12 @@ public partial class Battlefield:Control
         TextureFilter=TextureFilterEnum.Linear;
         CustomMinimumSize=new Vector2(0,440);MouseFilter=MouseFilterEnum.Stop;
     }
-    public void Bind(Battle battle){SilenceActionSounds();audioPaused=false;TargetIntent="attack";FormationEditing=false;exitAt=-100;evolutions.Clear();evolutionPlayed.Clear();entranceAt=-10;endingAt=-10;Battle=battle;Selected=battle.Enemies.FirstOrDefault();floats.Clear();damageNumbers.Clear();defeatedAt.Clear();frozenDefeats.Clear();poseTransitions.Clear();actor=null;actionAt=-10;ResetVisualStates();QueueRedraw();}
+    public void Bind(Battle battle){returns.Clear();releaseAt=-10;PlaybackPaused=false;SilenceActionSounds();audioPaused=false;TargetIntent="attack";FormationEditing=false;exitAt=-100;evolutions.Clear();evolutionPlayed.Clear();entranceAt=-10;endingAt=-10;Battle=battle;Selected=battle.Enemies.FirstOrDefault();floats.Clear();damageNumbers.Clear();defeatedAt.Clear();frozenDefeats.Clear();poseTransitions.Clear();actor=null;actionAt=-10;ResetVisualStates();QueueRedraw();}
     public double DisplayHp(Unit unit)=>VisualHp(unit);
     public void SelectUnit(Unit unit){Selected=unit;TooltipText="";UnitSelected?.Invoke(unit);QueueRedraw();}
     public void Animate(Dictionary<Unit,double> before)
     {
-        if(Battle==null)return;actor=Battle.LastActor;actionAt=clock;DelayVisualStates();ScheduleActionSound();
+        if(Battle==null)return;actor=Battle.LastActor;actionAt=clock;SetReleaseTime();DelayVisualStates();ScheduleActionSound();
         foreach(var pair in before){var delta=pair.Key.Hp-pair.Value;if(Math.Abs(delta)>.01)floats.Add((pair.Key,delta,clock));}
         foreach(var hit in Battle.LastImpacts)if(hit.Amount>.01)
             damageNumbers.Add(new(hit.Target,hit.Amount,hit.Kind,hit.Critical,hit.HitIndex,clock+ImpactDelay(hit)));
@@ -47,7 +47,7 @@ public partial class Battlefield:Control
         }
         QueueRedraw();
     }
-    public override void _Process(double delta){clock+=delta*1.16;UpdateClashAudio();UpdateActionSound();floats.RemoveAll(f=>clock-f.at>EffectDuration);damageNumbers.RemoveAll(f=>clock-f.At>1.3);QueueRedraw();}
+    public override void _Process(double delta){if(PlaybackPaused)return;clock+=delta*1.16*PlaybackSpeed;UpdateClashAudio();UpdateActionSound();floats.RemoveAll(f=>clock-f.at>EffectDuration);damageNumbers.RemoveAll(f=>clock-f.At>1.3);QueueRedraw();}
     public override void _GuiInput(InputEvent e)
     {
         if(e is InputEventMouseMotion motion){TooltipText=BuffHoverText(motion.Position);}

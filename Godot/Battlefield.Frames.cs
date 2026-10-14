@@ -61,9 +61,10 @@ public partial class Battlefield
         if(unit.Id=="kael"&&unit.Path=="martial"||!frameAtlases.TryGetValue(id,out var atlas))return false;
         int frame=PoseFrame(alive,ShownFreeze(unit)>0||ShownStun(unit)>0,active,age,hitAge,clock-defeatedAt.GetValueOrDefault(unit,clock-1),clock+unit.Layer*.17);
         if(unit.Id is "sevrin" or "maltherion" && alive && active)frame=age<.4f?4:age<HitMoment?5:age<.9f?6:7;
-        bool introRun=ExitActive&&friendly||EntranceActive&&(clock-entranceAt)<1.1;
+        bool returning=Returning(unit)&&unit!=actor;
+        bool introRun=returning||ExitActive&&friendly||EntranceActive&&(clock-entranceAt)<1.1;
         bool running=alive&&(introRun||active)&&hitAge>=.5f&&ShownStun(unit)==0&&ShownFreeze(unit)==0&&(introRun||IsRunning(unit,age))&&frameAtlases.ContainsKey(id+"_run");
-        if(running){atlas=frameAtlases[id+"_run"];frame=(int)((introRun?clock:age)*18)%4;if(!introRun&&age>1.08f)friendly=!friendly;}
+        if(running){atlas=frameAtlases[id+"_run"];frame=(int)((introRun?clock:age)*18)%4;if(returning||!introRun&&age>1.08f)friendly=!friendly;}
         else if(active&&alive&&hitAge>=.5f&&Battle?.LastSkill?.Hits>1&&age>=HitMoment&&age<HitMoment+Battle.LastSkill.Hits*.095f)frame=4+(int)((age-HitMoment)/.095f)%2;
         bool action=alive&&active&&!running&&hitAge>=.5f&&ShownFreeze(unit)==0&&ShownStun(unit)==0&&Battle?.LastSkill?.Operator!="split"&&frameAtlases.ContainsKey(id+"_action");
         if(action){atlas=frameAtlases[id+"_action"];frame=ActionFrame(age,IsMelee(unit));}

@@ -10,6 +10,7 @@ public partial class Battle
     public List<Unit> EnemyTargets=>Enemies.SelectMany(u=>u.TargetForms).ToList();
     public static List<Unit> Targets(IEnumerable<Unit> team)=>team.Select(u=>u.Origin??u).Distinct().SelectMany(u=>u.TargetForms).Where(u=>u.Alive).ToList();
     public List<string> Log{get;}=new();
+    public Dictionary<Unit,string> Behaviors{get;}=new();
     public List<CombatImpact> LastImpacts{get;}=new();
     public List<Unit> LastBuffTargets{get;}=new();
     private readonly Queue<Unit> turns=new();
@@ -23,7 +24,7 @@ public partial class Battle
     public bool Won=>Enemies.All(x=>!x.Alive)&&Allies.Any(x=>x.Alive);
     public int ActionRound=>turns.Count==0?Round+1:Round;
     public Unit? NextActor=>Finished?null:turns.Count>0?turns.Peek():Order().FirstOrDefault();
-    public IReadOnlyList<Unit> TurnPreview=>Finished?Array.Empty<Unit>():(turns.Count>0?turns.Where(u=>u.Alive):Order()).Take(8).ToArray();
+    public IReadOnlyList<Unit> TurnPreview=>Finished?Array.Empty<Unit>():(turns.Count>0?turns.Where(u=>u.Alive):Order()).ToArray();
     private readonly Catalog catalog;
     private readonly Random rng;
     public Battle(Catalog catalog,IEnumerable<Unit> allies,IEnumerable<Unit> enemies,int seed=42,int initialRound=0,bool initializeAllies=true)
@@ -97,14 +98,17 @@ public partial class Battle
                 var own=Allies.Contains(actor)?Allies:Enemies;var foes=Allies.Contains(actor)?Enemies:Allies;
                 // Check against the current round after dequeue, never the next action's round.
                 var available=SkillsFor(actor).Where(s=>(!s.FrontOnly||actor.Layer==0)&&actor.Level>=s.MinimumLevel&&actor.Gate>=s.MinimumGate&&actor.ReadyRound.GetValueOrDefault(s.Id,1+s.InitialCooldown)<=Round&&(s.Operator!="extreme"||actor.CanExtreme)&&(s.UsesPerBattle==0||actor.SkillUses.GetValueOrDefault(s.Id)<s.UsesPerBattle)&&(s.Operator!="split"||actor.Duality==null&&actor.Hp/actor.MaxHp>=s.MinimumHpRatio)).ToArray();
-                var skill=chosen??available.FirstOrDefault(s=>s.Operator=="extreme")??available.LastOrDefault(s=>s.Cooldown>0)??available[0];
-                var target=selected??(skill.Operator is "buff" or "split" or "eclipse_guard"?actor:skill.Operator=="heal"?own.Where(t=>t.Alive).OrderBy(t=>t.Hp/t.MaxHp).First():Targets(foes).OrderBy(t=>t.Layer).ThenBy(t=>t.Column).First());
+                var decision=AutoBattleAI.Choose(actor,available,own,foes,catalog.AutoBattle,Behaviors.GetValueOrDefault(actor));
+                var skill=chosen??decision?.Skill;
+                if(skill!=null){
+                var target=selected??(chosen==null?decision!.Target:skill.Operator is "buff" or "split" or "break" or "eclipse_guard"?actor:skill.Operator=="heal"?Targets(own).OrderBy(u=>u.Hp/u.MaxHp).First():Targets(foes).OrderBy(u=>u.Layer).ThenBy(u=>u.Column).First());
                 LastSkill=skill;LastTarget=target;LastAction=skill.Name;
                 int stacks=skill.DamageStackStatus==null?0:target.Stacks(skill.DamageStackStatus);
                 Act(actor,target,own,foes,skill,1,stacks);
                 if(spiritCanAct&&actor.Duality is {} linked&&skill.Operator is not ("split" or "buff" or "heal" or "break"))Act(linked.Spirit,target,own,foes,skill,linked.CopyDamage,stacks);
                 if(skill.Cooldown>0)actor.ReadyRound[skill.Id]=Round+skill.Cooldown-actor.PendingCooldownRefund;
                 actor.PendingCooldownRefund=0;
+                }else{LastAction="Aguardar";Log.Add(actor.Definition.Name+": nenhuma ação útil disponível");}
             }
             actor.Duality?.Spirit.EndOwnTurn();actor.EndOwnTurn();actor.EndStatusTurn();
         }
