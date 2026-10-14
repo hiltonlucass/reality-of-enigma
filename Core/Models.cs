@@ -17,6 +17,7 @@ public record Archetype(string Id, string Name, string Icon);
 public record Summon(string[] Pool, int[] Weights, int SingleCost, int TenCost);
 public record Catalog(Character[] Characters, Skill[] Skills, StatusEffect[] StatusEffects, Enemy[] Enemies, Stage[] Stages, Boss[] Bosses, Equipment[] Equipment, Faction[] Factions, Archetype[] Archetypes, Summon Summon)
 {
+    public AutoBattleConfig AutoBattle {get;init;}=new();
     public Character Hero(string id)=>Characters.Single(x=>x.Id==id);
     public Skill Ability(string id)=>Skills.Single(x=>x.Id==id);
     public static Catalog Load(string json)

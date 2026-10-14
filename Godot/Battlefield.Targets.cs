@@ -15,6 +15,7 @@ public partial class Battlefield
         TooltipText="";QueueRedraw();
     }
     public bool IsHighlightedTarget(Unit unit){
+        if(ContinuousAuto&&!FormationEditing&&!EntranceActive)return Battle?.LastTarget==unit&&unit.Alive&&IsAnimating;
         if(Battle==null||Battle.Finished||FormationEditing||EntranceActive||IsAnimating||DisplayActor==null||!Battle.Allies.Contains(DisplayActor))return false;
         bool ally=Battle.Allies.Contains(unit.Origin??unit);
         return unit.Alive&&(TargetIntent=="self"?unit==DisplayActor:TargetIntent=="support"?ally:TargetIntent=="area"?!ally:Selected==unit&&(TargetIntent=="heal"?ally:!ally));

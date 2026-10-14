@@ -43,6 +43,7 @@ public partial class Main
             b.MouseEntered+=()=>{if(b.IsInsideTree())b.GrabFocus();};b.Pressed+=action;left.AddChild(b);if(b.IsInsideTree()&&left.GetChildren().OfType<TentacleButton>().Count()==1)b.GrabFocus();}
         Action(game.Save.CompletedStage==0?"COMEÇAR JORNADA":"CONTINUAR JORNADA",()=>Start("campaign"));
         Action("MAPA DA CAMPANHA",ShowCampaignMenu);
+        Action("COMBATE AUTOMÁTICO • 5×5",()=>Start("flow"));
         Action("HERÓIS REVELADOS",ShowCharacterCards);
         if(game.Save.CompletedStage>=10)Action("SALA DE TREINAMENTO",ShowTrainingMenu);
         Action("CONFIGURAÇÕES",ShowSettings);

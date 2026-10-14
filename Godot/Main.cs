@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public partial class Main:Control
 {
-    private bool IsQa=>OS.GetCmdlineUserArgs().Any(a=>a=="--qa"||a=="--qa-v23"||a=="--qa-v24"||a=="--qa-v25"||a=="--qa-v26"||a=="--qa-v29"||a=="--qa-v30");
+    private bool IsQa=>OS.GetCmdlineUserArgs().Any(a=>a=="--qa-auto"||a=="--qa"||a=="--qa-v23"||a=="--qa-v24"||a=="--qa-v25"||a=="--qa-v26"||a=="--qa-v29"||a=="--qa-v30");
     private Game game=null!;
     private Battle? battle;
     private Label summary=null!;
@@ -67,13 +67,14 @@ public partial class Main:Control
         field.FormationChanged+=()=>{if(battle==null)return;if(mode is "demo" or "campaign" or "training"){game.Save.FormationCells=battle.Allies.Select(u=>u.Layer*3+u.Column).ToList();Persist();}Refresh();};
         partyHud=new PartyHud{Field=field};box.AddChild(partyHud);
         var playback=new HFlowContainer();box.AddChild(playback);
-        Button(playback,"▶  Próxima ação",Step);Button(playback,"▶ / Ⅱ  Automático",()=>{auto=!auto;Refresh();});
+        Button(playback,"Pausar / continuar",TogglePlayback);
+        playbackPace=new Button{Text="1×"};playback.AddChild(playbackPace);playbackPace.Pressed+=()=>{field.PlaybackSpeed=field.PlaybackSpeed%3+1;Refresh();};
         Button(playback,"Registro",()=>log.Visible=!log.Visible);
         skillsPanel=new Control{MouseFilter=MouseFilterEnum.Ignore};field.AddChild(skillsPanel);
         skillsPanel.SetAnchorsAndOffsetsPreset(LayoutPreset.CenterBottom);
         skillsPanel.OffsetLeft=-300;skillsPanel.OffsetRight=300;skillsPanel.OffsetTop=-355;skillsPanel.OffsetBottom=-8;
         var skillLayout=new VBoxContainer{MouseFilter=MouseFilterEnum.Ignore,Alignment=BoxContainer.AlignmentMode.End};skillLayout.AddThemeConstantOverride("separation",4);skillsPanel.AddChild(skillLayout);skillLayout.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        var actingPortrait=new ActingPortrait{Field=field,SizeFlagsHorizontal=SizeFlags.ShrinkCenter};skillLayout.AddChild(actingPortrait);
+        var actingPortrait=new ActingPortrait{Name="ActivePortrait",Field=field,SizeFlagsHorizontal=SizeFlags.ShrinkCenter};skillLayout.AddChild(actingPortrait);
         skillDescription=new Label{Text="Escolha uma habilidade",HorizontalAlignment=HorizontalAlignment.Center,AutowrapMode=TextServer.AutowrapMode.WordSmart,CustomMinimumSize=new Vector2(380,54)};
         skillDescription.AddThemeFontSizeOverride("font_size",18);skillDescription.AddThemeColorOverride("font_color",Colors.White);skillDescription.AddThemeColorOverride("font_shadow_color",Colors.Black);skillDescription.AddThemeConstantOverride("shadow_outline_size",5);descriptionFrame=new EnigmaPanel{Name="SkillDescriptionFrame",MouseFilter=MouseFilterEnum.Ignore,SizeFlagsHorizontal=SizeFlags.ShrinkCenter,CustomMinimumSize=new Vector2(420,0)};skillLayout.AddChild(descriptionFrame);descriptionFrame.AddChild(skillDescription);
         skillBar=new SkillWheel{MouseFilter=MouseFilterEnum.Ignore};skillLayout.AddChild(skillBar);
@@ -90,12 +91,12 @@ public partial class Main:Control
         log=new RichTextLabel{Visible=false,CustomMinimumSize=new Vector2(0,100),ScrollFollowing=true};box.AddChild(log);
         try
         {
-            var catalog=Catalog.Load(Godot.FileAccess.GetFileAsString("res://Data/catalog.json"));
-            game=new Game(catalog,IsQa?Game.NewSave():Persistence.Read(savePath));
+            var catalog=Catalog.Load(Godot.FileAccess.GetFileAsString("res://Data/catalog.json")) with {AutoBattle=AutoBattleConfig.Load(Godot.FileAccess.GetFileAsString("res://Data/auto-battle.json"))};
+            game=new Game(catalog,IsQa||OS.GetCmdlineUserArgs().Contains("--auto-demo")?Game.NewSave():Persistence.Read(savePath));
             foreach(var h in catalog.Characters.Where(c=>!c.Id.StartsWith("enemy")))selection.AddItem(h.Name);
-            Refresh();Write("Clique no alvo e depois em uma habilidade do personagem da vez.\nAvançar resolve automaticamente uma ação; Auto reproduz o combate. Arena de efeitos não concede recompensas.\nBanner: Kael, Savor, Aelia, Brakk e Lyra — 20% cada. Kits dos demais ainda parciais.");
+            Refresh();Write("Prepare a formação e as prioridades. A equipe luta automaticamente. Demonstrações não alteram a campanha nem concedem recompensas.");
             Start("demo");
-            if(OS.GetCmdlineUserArgs().Contains("--qa-v30"))CaptureV30Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v29"))CaptureV29Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v26"))CaptureV26Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v25"))CaptureV25Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v24"))CaptureV24Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v23"))CaptureV23Qa();else if(IsQa)CaptureQa();else ShowHomeMenu();
+            if(OS.GetCmdlineUserArgs().Contains("--qa-auto"))CaptureAutoQa();else if(OS.GetCmdlineUserArgs().Contains("--auto-demo")){Start("flow");demoLaunch=true;}else if(OS.GetCmdlineUserArgs().Contains("--qa-v30"))CaptureV30Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v29"))CaptureV29Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v26"))CaptureV26Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v25"))CaptureV25Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v24"))CaptureV24Qa();else if(OS.GetCmdlineUserArgs().Contains("--qa-v23"))CaptureV23Qa();else if(IsQa)CaptureQa();else ShowHomeMenu();
         }
         catch(Exception ex){Write("Não foi possível carregar. Nenhum save será sobrescrito. "+ex.Message);SetProcess(false);foreach(var r in new[]{row,economy,progression})foreach(var child in r.GetChildren())if(child is BaseButton b)b.Disabled=true;}
     }
@@ -103,7 +104,7 @@ public partial class Main:Control
     {var b=new Button{Text=name};b.Pressed+=()=>{try{action();}catch(Exception ex){Write(ex.Message);}};parent.AddChild(b);}
     private string Selected()=>game.Catalog.Characters.Where(c=>!c.Id.StartsWith("enemy")).ElementAt(selection.Selected).Id;
     private void Write(string text){log.AppendText(text+"\n");notice.Text=text.Split('\n').Last();}
-    private void Persist(){if(!IsQa)Persistence.Write(savePath,game.Save);Refresh();}
+    private void Persist(){if(!IsQa&&!OS.GetCmdlineUserArgs().Contains("--auto-demo"))Persistence.Write(savePath,game.Save);Refresh();}
     private void ApplyControl(string effect)
     {
         if(mode!="demo"||battle==null||battle.Finished){Write("Controles de teste disponíveis apenas em uma Arena de efeitos ativa.");return;}
@@ -127,12 +128,18 @@ public partial class Main:Control
         if(kind=="campaign"&&(!game.Save.OpeningSeen||!game.Save.ForestEncounterSeen)&&game.Save.CompletedStage==0){ShowOpening(true);return;}
         CloseMenu();pendingSkill=null;
         if(kind=="training"&&!game.Save.Training.Contains(bossId)){Write("Treino bloqueado: conclua o marco na campanha.");return;}
-        field.SetForest(kind=="story"||kind=="campaign"&&encounterStage<=10);
+        field.PlaybackPaused=false;field.ContinuousAuto=!IsQa||OS.GetCmdlineUserArgs().Contains("--qa-auto");
+        field.SetForest(kind=="flow"||kind=="story"||kind=="campaign"&&encounterStage<=10);
         mode=kind;trainingId=bossId;awarded=false;auto=false;training=null;
         var cells=Formation.Normalize(game.Save.FormationCells,game.Save.Team.Count);
         var allies=game.Save.Team.Select(id=>game.Save.Roster.Single(o=>o.Id==id)).Select((o,i)=>new Unit(game.Catalog.Hero(o.Id),o.Level,false,cells[i]%3,cells[i]/3,o.Path)).ToList();
         List<Unit> enemies;
-        if(kind=="demo")
+        if(kind=="flow"){
+            allies=new[]{"kael","savor","aelia","brakk","lyra"}.Select((id,i)=>new Unit(game.Catalog.Hero(id),20,false,cells[i]%3,cells[i]/3)).ToList();
+            var foe=game.Catalog.Hero("enemy_fenda") with {Stats=new Stats(1800,100,60,20,105)};
+            enemies=Enumerable.Range(0,5).Select(i=>new Unit(foe,20,false,i%3,i/3)).ToList();
+        }
+        else if(kind=="demo")
         {
             allies=game.Save.Team.Select(id=>new OwnedCharacter{Id=id,Level=20}).Select((o,i)=>new Unit(game.Catalog.Hero(o.Id),o.Level,false,cells[i]%3,cells[i]/3)).ToList();
             enemies=new(){new Unit(game.Catalog.Hero("varkhan"),20,true,0,0)};
@@ -185,14 +192,14 @@ public partial class Main:Control
         battle=new Battle(game.Catalog,allies,enemies);field.Bind(battle);PrepareEncounter();Write(preparing?"Organize a formação: arraste um aliado ou clique nele e depois na casa desejada.":"Novo encontro: "+(kind=="varkas"?"Fenrath":kind=="floral"?"Velmora":kind));Refresh();
     }
     private void PrepareEncounter(){preparing=!IsQa;field.FormationEditing=false;if(preparing)field.BeginEntrance();else battle?.LockFormation();}
-    private void BeginCombat(){pendingSkill=null;if(battle==null||field.EntranceActive)return;preparing=false;field.FormationEditing=false;battle.LockFormation();field.SelectUnit(battle.Enemies.First());elapsed=0;Write("Combate iniciado. Escolha um alvo e uma habilidade.");Refresh();}
+    private void BeginCombat(){pendingSkill=null;if(battle==null||field.EntranceActive)return;preparing=false;field.FormationEditing=false;battle.LockFormation();field.SelectUnit(battle.Enemies.First());elapsed=0;auto=!IsQa||OS.GetCmdlineUserArgs().Contains("--qa-auto");field.PlaybackPaused=false;Write("Combate automático iniciado.");Refresh();}
     private void Step()
     {PlayAction(null);}
     private void PlayAction(string? skill)
     {
         if(battle==null)return;
         if(preparing){auto=false;Write("Organize sua formação e clique em Iniciar combate.");Refresh();return;}
-        if(field.IsAnimating&&!IsQa)return;
+        if((field.ContinuousAuto?!field.ReadyForNextAction:field.IsAnimating)&&!IsQa)return;
         if(battle.Finished)
         {
             if(training!=null&&training.NextWave())
@@ -207,7 +214,7 @@ public partial class Main:Control
             auto=false;
             if(!battle.TryAct(skill,field.Selected,out var error)){Write(error);Refresh();return;}
         }
-        else battle.Advance();
+        else {field.ReleaseAction();battle.Advance();}
         field.Animate(hpBefore);foreach(var line in battle.Log.Skip(before))Write(line);
         if(battle.Finished&&!awarded)
         {
@@ -226,10 +233,12 @@ public partial class Main:Control
         skillsPanel.Visible=!field.EntranceActive&&!field.ExitActive&&!(mode=="campaign"&&battle?.Finished==true);
         if(preparing&&!field.EntranceActive&&!field.FormationEditing){field.FormationEditing=true;Refresh();}
         if(campaignResultPending&&!field.IsAnimating&&menuOverlay==null){campaignResultPending=false;ShowCampaignOutcome();}
-        if(!auto)return;elapsed+=delta;if(elapsed>1.75){elapsed=0;Step();}
+        if(demoLaunch&&!field.EntranceActive){demoLaunch=false;BeginCombat();}
+        if(!auto||menuOverlay!=null||preparing||!field.ReadyForNextAction)return;
+        Step();
     }
     public override void _UnhandledKeyInput(InputEvent e)
-    {if(e is InputEventKey k&&k.Pressed&&k.Keycode==Key.Escape){auto=false;Refresh();}}
+    {if(e is InputEventKey k&&k.Pressed&&k.Keycode==Key.Escape){if(auto)TogglePlayback();}}
     private static void VerifyFrameTimeline()
     {
         void Check(bool ok){if(!ok)throw new InvalidOperationException("QA: sequência de quadros");}
@@ -370,7 +379,7 @@ public partial class Main:Control
         if(battle!=null)
         {
             var u=field.Selected;
-            status.Text=$"{(preparing?"FORMAÇÃO 3×3":mode is "demo" or "cast" or "story"?"SIMULAÇÃO SEM RECOMPENSAS":mode=="campaign"?"CAMPANHA":mode=="varkas"?"FENRATH • TESTE":mode=="floral"?"VELMORA • TESTE":mode.ToUpperInvariant())} • Rodada {battle.Round} • {(auto?"AUTO":"PAUSADO")} • {battle.LastAction}";
+            status.Text=$"{(preparing?"FORMAÇÃO 3×3":mode is "flow" or "demo" or "cast" or "story"?"SIMULAÇÃO SEM RECOMPENSAS":mode=="campaign"?"CAMPANHA":mode=="varkas"?"FENRATH • TESTE":mode=="floral"?"VELMORA • TESTE":mode.ToUpperInvariant())} • Rodada {battle.Round} • {(auto?"AUTO":"PAUSADO")} • {battle.LastAction}";
             if(training!=null)status.Text+=$" • ONDA {training.Wave}/3";
             if(u!=null)status.TooltipText=$"\nAlvo: {u.Definition.Name} • gelo {u.Ice}/5 | congelamento {u.Freeze} | stun {u.Stun} | imunidade {u.Immunity} | slow {Math.Max(u.SlowTurns,u.TechniqueSlowTurns)} | velocidade {u.Speed:F0}";
             if(battle.Finished)status.Text+=" • "+(battle.Won?"VITÓRIA":"DERROTA");
@@ -395,6 +404,8 @@ public partial class Main:Control
     private void RefreshSkills()
     {
         foreach(var container in new Container[]{skillBar,skillActions})foreach(var child in container.GetChildren()){container.RemoveChild(child);child.QueueFree();}
+        skillBar.Visible=!field.ContinuousAuto;
+        if(field.ContinuousAuto){RefreshAutoSkills();return;}
         if(preparing&&field.EntranceActive){skillDescription.Text="O ENCONTRO • Prepare sua equipe";return;}
         if(preparing){skillDescription.Text="FORMAÇÃO 3×3 • Arraste os aliados para os círculos.";Button(skillActions,"Iniciar combate",BeginCombat);return;}
         var actor=battle?.NextActor;
