@@ -9,6 +9,10 @@ $dest = Join-Path $project 'Content\SampleScene\Tree'
 if (-not (Test-Path -LiteralPath $tree)) { throw 'Instale os recursos de templates do Unreal.' }
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 Copy-Item -Path (Join-Path $tree '*') -Destination $dest -Recurse -Force
+$characters = Join-Path $EngineRoot 'Templates\TemplateResources\High\Characters\Content'
+$characterDest = Join-Path $project 'Content\Characters'
+New-Item -ItemType Directory -Force -Path $characterDest | Out-Null
+Copy-Item -Path (Join-Path $characters '*') -Destination $characterDest -Recurse -Force
 $uproject = Join-Path $project 'EnigmaScene.uproject'
 $script = Join-Path $PSScriptRoot 'Scripts\build_scene.py'
 & $editor $uproject '-unattended' '-run=pythonscript' "-script=$script" '-nosplash' '-stdout' '-FullStdOutLogOutput'
